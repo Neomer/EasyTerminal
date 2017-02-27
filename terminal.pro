@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui serialport
+QT       += core gui serialport sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,10 +14,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         MainWindow.cpp \
-    DeviceDlg.cpp
+    DeviceDlg.cpp \
+    model/Device.cpp \
+    model/IModel.cpp
 
 HEADERS  += MainWindow.h \
-    DeviceDlg.h
+    DeviceDlg.h \
+    model/Device.h \
+    model/IModel.h
 
 FORMS    += MainWindow.ui \
     DeviceDlg.ui

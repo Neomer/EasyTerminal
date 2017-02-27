@@ -3,6 +3,9 @@
 #include <QClipboard>
 #include <QSerialPortInfo>
 #include "DeviceDlg.h"
+#include "model/Device.h"
+#include <QSqlQuery>
+#include <QSqlError>
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -20,23 +23,22 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->txtLog->setEnabled(false);
 	
 	_port = new QSerialPort("COM5", this);
+	
 	connect(_port, SIGNAL(readyRead()),this, SLOT(readPort()));
-	
-	ui->cmbParity->clear();
-	ui->cmbParity->addItem("None", QSerialPort::NoParity);
-	ui->cmbParity->addItem("Even", QSerialPort::EvenParity);
-	ui->cmbParity->addItem("Odd", QSerialPort::OddParity);
-	ui->cmbParity->addItem("Space", QSerialPort::SpaceParity);
-	ui->cmbParity->addItem("Mark", QSerialPort::MarkParity);
-	ui->cmbParity->setCurrentIndex(0);
-	
-	ui->cmbStop->clear();
-	ui->cmbStop->addItem("1", QSerialPort::OneStop);
-	ui->cmbStop->addItem("1.5", QSerialPort::OneAndHalfStop);
-	ui->cmbStop->addItem("2", QSerialPort::TwoStop);
-	ui->cmbStop->setCurrentIndex(0);
 
-	updateLists();	
+	_deviceDlg = new DeviceDlg(this);
+	
+	_db = QSqlDatabase::addDatabase("QSQLITE");
+	_db.setDatabaseName(qApp->applicationDirPath().append("/db.sqlite"));
+	if (!_db.open())
+	{
+		printLog("Database not found!");
+		return;
+	}
+	
+	loadDeviceList();
+	
+	updateLists();
 }
 
 MainWindow::~MainWindow()
@@ -75,30 +77,34 @@ void MainWindow::sendKey(QString key)
 		_port->write(key.toLatin1().constData());
 }
 
+void MainWindow::loadDeviceList()
+{
+	ui->cmbDevices->clear();
+	
+	QSqlQuery q("select * from devices order by name asc;");
+	
+	if (!q.first())
+		return;
+	
+	do
+	{
+		qDebug("%d", q.value("id").toInt());
+		ui->cmbDevices->addItem(q.value("name").toString(), q.value("id").toInt());
+	}
+	while (q.next());
+
+}
+
 void MainWindow::openClicked()
 {
 	if (_port->isOpen())
 	{
 		_port->close();
 		ui->cmdOpen->setText("Open");
-		//updateLists();
 		printLog("\n[Port closed!]\n");
 	}
 	else
 	{
-		printLog(QString("[Connect to port %1 %2 %3-%4-%5...]\n").arg(
-					ui->cmbPort->currentText(),
-					ui->cmbBaud->currentText(),
-					ui->cmbData->currentText(),
-					ui->cmbStop->currentText(),
-					ui->cmbParity->currentText())
-			   );
-		_port->setPortName(ui->cmbPort->currentText());
-		_port->setBaudRate(ui->cmbBaud->currentText().toInt());
-		_port->setDataBits((QSerialPort::DataBits)ui->cmbData->currentText().toInt());
-		_port->setStopBits((QSerialPort::StopBits)ui->cmbStop->currentData().toInt());
-		_port->setParity((QSerialPort::Parity)ui->cmbParity->currentData().toInt());
-		
 		if (_port->open(QIODevice::ReadWrite))
 		{
 			printLog("[Port openned!]\n");
@@ -115,21 +121,36 @@ void MainWindow::openClicked()
 
 void MainWindow::addDevice()
 {
-	DeviceDlg dlg(this);
-	
-	if (dlg.exec() == QDialog::Accepted) 
+	_deviceDlg->update();
+	if (_deviceDlg->exec() == QDialog::Accepted) 
 	{
-		
+		Device result;
+		_deviceDlg->dialogResult(result);
+		if (!result.insert())
+		{
+			printLog(tr("Database error! Insertion error!"));
+		}
+		loadDeviceList();
 	}
 }
 
 void MainWindow::editDevice()
 {
-	DeviceDlg dlg(this);
-	
-	if (dlg.exec() == QDialog::Accepted) 
+	Device d;
+	qDebug("%d", ui->cmbDevices->currentData().toInt());
+	if (!d.load(ui->cmbDevices->currentData().toInt()))
 	{
-		
+		printLog(tr("Database error! Device not found!"));
+	}
+	_deviceDlg->load(d);
+	if (_deviceDlg->exec() == QDialog::Accepted) 
+	{
+		_deviceDlg->dialogResult(d);
+		if (!d.update(d.getId()))
+		{
+			printLog(tr("Database error! Update error!"));
+		}
+		loadDeviceList();
 	}
 }
 
@@ -140,7 +161,7 @@ void MainWindow::removeDevice()
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
-	if (event->type() == QEvent::KeyPress)
+	if ((event->type() == QEvent::KeyPress)&&(watched == this))
 	{
 		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 		if ((keyEvent->key() == Qt::Key_V)&&(keyEvent->modifiers() == Qt::ControlModifier))
@@ -176,11 +197,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::changeEnableState()
 {
-	ui->cmbBaud->setEnabled(!ui->cmbBaud->isEnabled());
-	ui->cmbData->setEnabled(!ui->cmbData->isEnabled());
-	ui->cmbParity->setEnabled(!ui->cmbParity->isEnabled());
 	ui->cmbPort->setEnabled(!ui->cmbPort->isEnabled());
-	ui->cmbStop->setEnabled(!ui->cmbStop->isEnabled());
 	ui->txtLog->setEnabled(!ui->txtLog->isEnabled());
 }
 
@@ -190,7 +207,16 @@ void MainWindow::updateLists()
 	QList<QSerialPortInfo> spi = QSerialPortInfo::availablePorts();
 	foreach (QSerialPortInfo pi, spi) 
 	{
-		ui->cmbPort->addItem(pi.portName());
+		int idx = 0;
+		for (int i = 0; i < ui->cmbPort->count(); i++)
+		{
+			if (ui->cmbPort->itemText(i) > pi.portName())
+			{
+				idx = i - 1;
+				break;
+			}
+		}
+		ui->cmbPort->insertItem(idx, pi.portName());
 	}
 	
 }

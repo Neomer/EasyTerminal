@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QSerialPort>
+#include <QSqlDatabase>
+#include <DeviceDlg.h>
 
 namespace Ui {
 class MainWindow;
@@ -24,6 +26,7 @@ private:
 	void printLog(QString text);
 	void sendKey(int key);
 	void sendKey(QString key);
+	void loadDeviceList();
 		
 private slots:
 	void openClicked();
@@ -40,6 +43,8 @@ private:
 	
 	Ui::MainWindow *ui;
 	QSerialPort *_port;
+	QSqlDatabase _db;
+	DeviceDlg *_deviceDlg;
 };
 
 #endif // MAINWINDOW_H
