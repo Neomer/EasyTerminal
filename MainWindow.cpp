@@ -76,6 +76,14 @@ void MainWindow::sendBuffer()
 
 void MainWindow::printLog(QString text)
 {
+	QRegExp r("[^(\\w#\r\t\n :,_-!\\.))]");
+	int pos = 0;
+	while ((pos = r.indexIn(text)) != -1) 
+	{
+		QString rep = r.cap(0);
+		text.replace(rep, QString("#").append(QString::number(rep.toLatin1().at(0),16).toUpper()));
+	}
+	
 	ui->txtLog->setPlainText(ui->txtLog->toPlainText().append(text));
 	QTextCursor cursor = ui->txtLog->textCursor();
 	cursor.movePosition(QTextCursor::End);
@@ -253,6 +261,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			{
 				_postpone.remove(_postpone.length() - 1, 1);
 				ui->txtLog->setPlainText(ui->txtLog->toPlainText().remove(ui->txtLog->toPlainText().length() - 1, 1));
+				ui->txtLog->moveCursor(QTextCursor::End);
 			}
 			else
 			{

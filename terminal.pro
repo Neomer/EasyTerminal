@@ -35,3 +35,6 @@ FORMS    += MainWindow.ui \
 
 TRANSLATIONS += intl/ru_RU.ts \	
     intl/en_US.ts
+
+MOC_DIR = tmp/moc
+OBJECTS_DIR = tmp/obj
