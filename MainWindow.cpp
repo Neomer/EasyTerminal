@@ -5,6 +5,7 @@
 #include "DeviceDlg.h"
 #include <QSqlQuery>
 #include <QSqlError>
+#include "SettingsDlg.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -19,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->actEdit, SIGNAL(triggered(bool)), this, SLOT(editDevice()));
 	connect(ui->actRemove, SIGNAL(triggered(bool)), this, SLOT(removeDevice()));
 	connect(ui->cmbDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(currentDeviceChanged(int)));
+	connect(ui->actionSettings, SIGNAL(triggered(bool)), this, SLOT(openSettings()));
 	
 	ui->txtLog->setEnabled(false);
 	
@@ -27,23 +29,38 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(_port, SIGNAL(readyRead()),this, SLOT(readPort()));
 
 	_deviceDlg = new DeviceDlg(this);
-	
-	_db = QSqlDatabase::addDatabase("QSQLITE");
-	_db.setDatabaseName(qApp->applicationDirPath().append("/db.sqlite"));
-	if (!_db.open())
-	{
-		printLog("Database not found!");
-		return;
-	}
+	_db = QSqlDatabase::database();
 	
 	loadDeviceList();
-	
 	updateLists();
 }
 
 MainWindow::~MainWindow()
 {
 	delete ui;
+}
+
+void MainWindow::installTranslator(QLocale locale)
+{
+	QString locale_file = qApp->applicationDirPath().append("/intl/").append(locale.name()).append(".qm");
+	if (QFile::exists(locale_file))
+	{
+		if (!_translator.load(locale_file))
+		{
+			qDebug("%s", tr("Failed to load translation!").toLatin1().constData());
+		}
+		else
+		{
+			qApp->removeTranslator(&_translator);
+			qApp->installTranslator(&_translator);
+		}
+	}
+	else
+	{
+		printLog(tr("File not found"));
+	}
+	
+	ui->retranslateUi(this);
 }
 
 void MainWindow::readPort()
@@ -102,8 +119,8 @@ void MainWindow::openClicked()
 	if (_port->isOpen())
 	{
 		_port->close();
-		ui->cmdOpen->setText("Open");
-		printLog("\n[Port closed!]\n");
+		ui->cmdOpen->setText(tr("Open"));
+		printLog(tr("\nPort closed!\n"));
 	}
 	else
 	{
@@ -116,14 +133,14 @@ void MainWindow::openClicked()
 		
 		if (_port->open(QIODevice::ReadWrite))
 		{
-			printLog("[Port openned!]\n");
+			printLog(tr("[Port openned!]\n"));
 		}
 		else
 		{
-			printLog("[Port unavailable!]\n");
+			printLog(tr("[Port unavailable!]\n"));
 			return;
 		}
-		ui->cmdOpen->setText("Close");
+		ui->cmdOpen->setText(tr("Close"));
 	}
 	changeEnableState();
 }
@@ -178,7 +195,20 @@ void MainWindow::currentDeviceChanged(int index)
 	
 	if (!_currentDevice.load(ui->cmbDevices->currentData().toInt()))
 	{
-		printLog("Database failed! Device not found!");
+		printLog(tr("Database error! Device not found!"));
+	}
+}
+
+void MainWindow::openSettings()
+{
+	SettingsDlg dlg(this);
+	Settings s;
+	dlg.setSettings(s);
+	
+	if (dlg.exec() == QDialog::Accepted)
+	{
+		dlg.getSettings(s);
+		installTranslator(s.getLocale());
 	}
 }
 

@@ -84,7 +84,7 @@
        <item row="6" column="0">
         <widget class="QLabel" name="echoLabel">
          <property name="text">
-          <string>Echo</string>
+          <string>Echo:</string>
          </property>
         </widget>
        </item>

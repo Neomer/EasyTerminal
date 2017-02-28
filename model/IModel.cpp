@@ -7,12 +7,46 @@ IModel::IModel(QString tablename) :
 	_propertyListReady = false;
 }
 
-bool IModel::load(quint32 id)
+bool IModel::load(QVariant id)
 {
-	QSqlQuery q(QString("SELECT * FROM %1 WHERE id=%2;").arg(
+	QSqlQuery q;
+	
+	if (!q.prepare(QString("SELECT * FROM %1 WHERE id=%2;").arg(
 						getTable(),
-						QString::number(id)
-					));
+						formatValue(id)
+					)))
+	{
+		return false;
+	}
+	
+	if (!q.exec())
+		return false;
+
+	if (!q.first())
+		return false;
+	
+	parseQuery(q);
+	return true;
+}
+
+bool IModel::load(QMap<QString, QVariant> filter)
+{
+	QSqlQuery q;
+	QString sFtr;
+	
+	foreach (QString key, filter.keys()) 
+	{
+		sFtr.append(key).append("=").append(formatValue(filter.value(key)));
+	}
+	
+	
+	if (!q.prepare(QString("SELECT * FROM %1 WHERE %2;").arg(
+						getTable(),
+						sFtr
+					)))
+	{
+		return false;
+	}
 	
 	if (!q.exec())
 		return false;
@@ -163,4 +197,33 @@ QStringList IModel::prepareValues()
 	}
 	
 	return ret;
+}
+
+QString IModel::formatValue(QVariant value)
+{
+	switch (value.type())
+	{
+		case QVariant::String:
+			return QString("'%1'").arg(value.toString());
+			break;
+		
+		case QVariant::Bool: case QVariant::Int: case QVariant::UInt: case QVariant::LongLong: case QVariant::ULongLong:
+			return QString::number(value.toLongLong());
+			break;
+		
+		case QVariant::Date:
+			return value.toDate().toString("yyyy-MM-dd");
+			break;
+			
+		case QVariant::DateTime:
+			return value.toDate().toString("yyyy-MM-dd hh:mm:ss.zzz");
+			break;
+			
+		case QVariant::UserType:
+			return QString::number(value.toLongLong());
+			break;
+		
+		default:
+			break;
+	}
 }

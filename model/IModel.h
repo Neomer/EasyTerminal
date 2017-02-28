@@ -6,6 +6,8 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QMetaProperty>
+#include <QMap>
+#include <QDateTime>
 
 class IModel : public QObject
 {
@@ -16,7 +18,9 @@ public:
 	
 	QString getTable() { return _tableName; }
 	
-	bool load(quint32 id);
+	bool load(QVariant id);
+	bool load(QMap<QString, QVariant> filter);
+	
 	bool insert();
 	bool update(quint32 id);
 	bool remove(quint32 id);
@@ -27,6 +31,7 @@ private:
 	void parseQuery(QSqlQuery &q);
 	void updatePropertyList();
 	QStringList prepareValues();
+	QString formatValue(QVariant value);
 	
 	QStringList _propertyList;
 	bool _propertyListReady;

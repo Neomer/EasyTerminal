@@ -6,7 +6,7 @@
 #include <QSqlDatabase>
 #include <DeviceDlg.h>
 #include "model/Device.h"
-
+#include <QTranslator>
 
 namespace Ui {
 class MainWindow;
@@ -19,6 +19,8 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
+	
+	void installTranslator(QLocale locale);
 	
 public slots:
 	void readPort();
@@ -36,6 +38,7 @@ private slots:
 	void editDevice();
 	void removeDevice();
 	void currentDeviceChanged(int index);
+	void openSettings();
 	
 protected:
 	bool eventFilter(QObject *watched, QEvent *event);
@@ -46,10 +49,11 @@ private:
 	
 	Ui::MainWindow *ui;
 	QSerialPort *_port;
-	QSqlDatabase _db;
 	DeviceDlg *_deviceDlg;
+	QSqlDatabase _db;
 	Device _currentDevice;
 	QString _postpone, _postpone_last;
+	QTranslator _translator;
 };
 
 #endif // MAINWINDOW_H

@@ -96,11 +96,11 @@ void DeviceDlg::update()
 	ui->deviceNameLineEdit->clear();
 	
 	ui->parityComboBox->clear();
-	ui->parityComboBox->addItem("None", QSerialPort::NoParity);
-	ui->parityComboBox->addItem("Even", QSerialPort::EvenParity);
-	ui->parityComboBox->addItem("Odd", QSerialPort::OddParity);
-	ui->parityComboBox->addItem("Space", QSerialPort::SpaceParity);
-	ui->parityComboBox->addItem("Mark", QSerialPort::MarkParity);
+	ui->parityComboBox->addItem(tr("None"), QSerialPort::NoParity);
+	ui->parityComboBox->addItem(tr("Even"), QSerialPort::EvenParity);
+	ui->parityComboBox->addItem(tr("Odd"), QSerialPort::OddParity);
+	ui->parityComboBox->addItem(tr("Space"), QSerialPort::SpaceParity);
+	ui->parityComboBox->addItem(tr("Mark"), QSerialPort::MarkParity);
 	ui->parityComboBox->setCurrentIndex(0);
 	
 	ui->stopBitsComboBox->clear();
