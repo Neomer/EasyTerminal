@@ -49,7 +49,7 @@ private:
 	QSqlDatabase _db;
 	DeviceDlg *_deviceDlg;
 	Device _currentDevice;
-	QString _postpone;
+	QString _postpone, _postpone_last;
 };
 
 #endif // MAINWINDOW_H

@@ -184,7 +184,7 @@ void MainWindow::currentDeviceChanged(int index)
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
-	if ((event->type() == QEvent::KeyPress)&&(watched == this))
+	if ((event->type() == QEvent::KeyPress)&&((watched == this)||(_port->isOpen())))
 	{
 		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 		QString text = keyEvent->text();
@@ -210,6 +210,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			if (_currentDevice.getPostpone())
 			{
 				sendKey(_postpone);
+				_postpone_last = _postpone;
 				_postpone.clear();
 			}
 			sendKey(_currentDevice.getLineEnd());
@@ -222,6 +223,21 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 			{
 				_postpone.remove(_postpone.length() - 1, 1);
 				ui->txtLog->setPlainText(ui->txtLog->toPlainText().remove(ui->txtLog->toPlainText().length() - 1, 1));
+			}
+			else
+			{
+				sendKey(_currentDevice.getLineEnd());
+				if (ui->chkEcho->isChecked())
+					printLog(text);
+			}
+		}
+		else if (keyEvent->key() == Qt::Key_Up)
+		{
+			if (_currentDevice.getPostpone())
+			{
+				_postpone = _postpone_last;
+				if (ui->chkEcho->isChecked())
+					printLog(_postpone);
 			}
 			else
 			{
@@ -251,6 +267,7 @@ void MainWindow::changeEnableState()
 {
 	ui->cmbPort->setEnabled(!ui->cmbPort->isEnabled());
 	ui->txtLog->setEnabled(!ui->txtLog->isEnabled());
+	ui->menu->setEnabled(!ui->menu->isEnabled());
 }
 
 void MainWindow::updateLists()
