@@ -31,11 +31,16 @@ bool IModel::insert()
 		updatePropertyList();
 	}
 	
-	QSqlQuery q(QString("INSERT INTO %1 (%2) VALUES (%3);").arg(
-					getTable(),
-					_propertyList.join(','),
-					prepareValues().join(',')
-				));
+	QSqlQuery q;
+	
+	if (!q.prepare(QString("INSERT INTO %1 (%2) VALUES (%3);").arg(
+				  getTable(),
+				  _propertyList.join(','),
+				  prepareValues().join(',')
+			  )))
+	{
+		return false;
+	}
 	
 	if (!q.exec())
 		return false;
@@ -58,20 +63,37 @@ bool IModel::update(quint32 id)
 					   _propertyList.at(i),
 					   v.at(i)));
 	}
-	upd.left(upd.count() - 1);
+	upd = upd.left(upd.count() - 1);
 	
-	QSqlQuery q(QString("UPDATE %1 SET %2 WHERE id=%3;").arg(
+	QSqlQuery q;
+	
+	
+	if (!q.prepare(QString("UPDATE %1 SET %2 WHERE id=%3;").arg(
 					getTable(),
 					upd,
 					QString::number(id)
-				));
+				)))
+	{
+		return false;
+	}
+	if (!q.exec())
+		return false;
 	
-	qDebug("%s", QString("UPDATE %1 SET %2 WHERE id=%3;").arg(
-			   getTable(),
-			   upd,
-			   QString::number(id)
-		   ).toLatin1().constData());
+	return true;
+}
+
+bool IModel::remove(quint32 id)
+{
+	QSqlQuery q;
 	
+	
+	if (!q.prepare(QString("DELETE FROM %1 WHERE id=%3;").arg(
+					getTable(),
+					QString::number(id)
+				)))
+	{
+		return false;
+	}
 	if (!q.exec())
 		return false;
 	
@@ -85,7 +107,13 @@ void IModel::parseQuery(QSqlQuery &q)
 		int idx = q.record().indexOf(this->metaObject()->property(i).name());
 		if (idx >= 0)
 		{
-			this->metaObject()->property(i).write(this, q.value(idx));
+			q.value(idx).convert(this->metaObject()->property(i).type());
+			if (!this->metaObject()->property(i).write(this, q.value(idx)))
+			{
+				qDebug("Failed! Property: %s Value %s",
+					   this->metaObject()->property(i).name(),
+					   q.value(idx).toString().toLatin1().constData());
+			}
 		}
 	}
 	_ready = true;

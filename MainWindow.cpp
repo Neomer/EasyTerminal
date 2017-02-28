@@ -3,7 +3,6 @@
 #include <QClipboard>
 #include <QSerialPortInfo>
 #include "DeviceDlg.h"
-#include "model/Device.h"
 #include <QSqlQuery>
 #include <QSqlError>
 
@@ -19,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->actAdd, SIGNAL(triggered(bool)), this, SLOT(addDevice()));
 	connect(ui->actEdit, SIGNAL(triggered(bool)), this, SLOT(editDevice()));
 	connect(ui->actRemove, SIGNAL(triggered(bool)), this, SLOT(removeDevice()));
+	connect(ui->cmbDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(currentDeviceChanged(int)));
 	
 	ui->txtLog->setEnabled(false);
 	
@@ -97,6 +97,8 @@ void MainWindow::loadDeviceList()
 
 void MainWindow::openClicked()
 {
+	_postpone.clear();
+	
 	if (_port->isOpen())
 	{
 		_port->close();
@@ -105,6 +107,13 @@ void MainWindow::openClicked()
 	}
 	else
 	{
+		_port->setBaudRate(_currentDevice.getBaudRate());
+		_port->setDataBits(_currentDevice.getDataBits());
+		_port->setPortName(ui->cmbPort->currentText());
+		_port->setParity(_currentDevice.getParity());
+		_port->setStopBits(_currentDevice.getStopBits());
+		ui->chkEcho->setChecked(_currentDevice.getEcho());
+		
 		if (_port->open(QIODevice::ReadWrite))
 		{
 			printLog("[Port openned!]\n");
@@ -137,7 +146,6 @@ void MainWindow::addDevice()
 void MainWindow::editDevice()
 {
 	Device d;
-	qDebug("%d", ui->cmbDevices->currentData().toInt());
 	if (!d.load(ui->cmbDevices->currentData().toInt()))
 	{
 		printLog(tr("Database error! Device not found!"));
@@ -156,7 +164,22 @@ void MainWindow::editDevice()
 
 void MainWindow::removeDevice()
 {
+	Device d;
+	if (!d.remove(ui->cmbDevices->currentData().toInt()))
+	{
+		printLog(tr("Database error! Device not found!"));
+	}
+	loadDeviceList();
+}
+
+void MainWindow::currentDeviceChanged(int index)
+{
+	Q_UNUSED(index)
 	
+	if (!_currentDevice.load(ui->cmbDevices->currentData().toInt()))
+	{
+		printLog("Database failed! Device not found!");
+	}
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
@@ -164,9 +187,17 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 	if ((event->type() == QEvent::KeyPress)&&(watched == this))
 	{
 		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+		QString text = keyEvent->text();
+		
+		if (ui->chkCaps->isChecked())
+			text = text.toUpper();
+		
 		if ((keyEvent->key() == Qt::Key_V)&&(keyEvent->modifiers() == Qt::ControlModifier))
 		{
-			sendKey(qApp->clipboard()->text());
+			if (ui->chkCaps->isChecked())
+				sendKey(qApp->clipboard()->text().toUpper());
+			else
+				sendKey(qApp->clipboard()->text());
 			if (ui->chkEcho->isChecked())
 				qApp->clipboard()->text();
 		}
@@ -176,16 +207,37 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 		}
 		else if ((keyEvent->key() == Qt::Key_Enter)||(keyEvent->key() == Qt::Key_Return))
 		{
-			sendKey('\r');
-			sendKey('\n');
+			if (_currentDevice.getPostpone())
+			{
+				sendKey(_postpone);
+				_postpone.clear();
+			}
+			sendKey(_currentDevice.getLineEnd());
 			if (ui->chkEcho->isChecked())
-				printLog(keyEvent->text());
+				printLog(text);
+		}
+		else if (keyEvent->key() == Qt::Key_Backspace)
+		{
+			if (_currentDevice.getPostpone())
+			{
+				_postpone.remove(_postpone.length() - 1, 1);
+				ui->txtLog->setPlainText(ui->txtLog->toPlainText().remove(ui->txtLog->toPlainText().length() - 1, 1));
+			}
+			else
+			{
+				sendKey(_currentDevice.getLineEnd());
+				if (ui->chkEcho->isChecked())
+					printLog(text);
+			}
 		}
 		else
 		{
-			sendKey(keyEvent->text());
+			if (_currentDevice.getPostpone())
+				_postpone.append(text);
+			else
+				sendKey(text);
 			if (ui->chkEcho->isChecked())
-				printLog(keyEvent->text());
+				printLog(text);
 		}
 		return true;
 	}

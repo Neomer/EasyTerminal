@@ -5,6 +5,8 @@
 #include <QSerialPort>
 #include <QSqlDatabase>
 #include <DeviceDlg.h>
+#include "model/Device.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -33,6 +35,7 @@ private slots:
 	void addDevice();
 	void editDevice();
 	void removeDevice();
+	void currentDeviceChanged(int index);
 	
 protected:
 	bool eventFilter(QObject *watched, QEvent *event);
@@ -45,6 +48,8 @@ private:
 	QSerialPort *_port;
 	QSqlDatabase _db;
 	DeviceDlg *_deviceDlg;
+	Device _currentDevice;
+	QString _postpone;
 };
 
 #endif // MAINWINDOW_H

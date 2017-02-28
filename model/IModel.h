@@ -19,6 +19,7 @@ public:
 	bool load(quint32 id);
 	bool insert();
 	bool update(quint32 id);
+	bool remove(quint32 id);
 	
 	bool isReady() { return _ready; }
 	
