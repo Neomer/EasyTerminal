@@ -99,8 +99,13 @@ bool IModel::update(quint32 id)
 	}
 	upd = upd.left(upd.count() - 1);
 	
-	QSqlQuery q;
+	qDebug("%s", QString("UPDATE %1 SET %2 WHERE id=%3;").arg(
+			   getTable(),
+			   upd,
+			   QString::number(id)
+		   ).toUtf8().constData());
 	
+	QSqlQuery q;
 	
 	if (!q.prepare(QString("UPDATE %1 SET %2 WHERE id=%3;").arg(
 					getTable(),

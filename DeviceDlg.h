@@ -24,6 +24,11 @@ public:
 
 	void update();		
 	
+	
+	
+public slots:
+	void retranslate();
+	
 private:
 	
 	Ui::DeviceDlg *ui;

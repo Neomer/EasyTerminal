@@ -29,6 +29,7 @@ void DeviceDlg::dialogResult(Device &device)
 	device.setParity(ui->parityComboBox->currentData().value<QSerialPort::Parity>());
 	device.setPostpone(ui->postponedWritingCheckBox->isChecked());
 	device.setStopBits(ui->stopBitsComboBox->currentData().value<QSerialPort::StopBits>());
+	device.setCaps(ui->capsCheckBox->isChecked());
 }
 
 void DeviceDlg::load(Device &device)
@@ -38,6 +39,7 @@ void DeviceDlg::load(Device &device)
 	ui->deviceNameLineEdit->setText(device.getName());
 	ui->echoCheckBox->setChecked(device.getEcho());
 	ui->postponedWritingCheckBox->setChecked(device.getPostpone());
+	ui->capsCheckBox->setChecked(device.getCaps());
 	for (int i = 0; i < ui->baudRateComboBox->count(); i++)
 	{
 		if (ui->baudRateComboBox->itemText(i).toInt() == device.getBaudRate())
@@ -128,5 +130,10 @@ void DeviceDlg::update()
 	ui->lineEndComboBox->addItem("<LF>", "\n");
 	ui->lineEndComboBox->addItem("<CR><LF>", "\r\n");
 	ui->lineEndComboBox->setCurrentIndex(0);
+	
+}
 
+void DeviceDlg::retranslate()
+{
+	ui->retranslateUi(this);
 }

@@ -18,6 +18,7 @@ class Device : public IModel
 	Q_PROPERTY(bool echo READ getEcho WRITE setEcho)
 	Q_PROPERTY(bool postpone READ getPostpone WRITE setPostpone)
 	Q_PROPERTY(QString line READ getLineEnd WRITE setLineEnd)
+	Q_PROPERTY(bool caps READ getCaps WRITE setCaps)
 	
 public:
 	Device();
@@ -52,10 +53,14 @@ public:
 	QString getLineEnd() { return _lineEnd; }
 	void setLineEnd(QString value) { _lineEnd = value; }
 	
+	bool getCaps() { return _caps; }
+	void setCaps(bool value) { _caps = value; }
+	
 private:
 	quint32 _id;
 	bool _echo;
 	bool _postpone;
+	bool _caps;
 	QString _name;
 	int _baudRate;
 	QSerialPort::DataBits _dataBits;

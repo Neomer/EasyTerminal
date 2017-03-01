@@ -61,6 +61,7 @@ void MainWindow::installTranslator(QLocale locale)
 	}
 	
 	ui->retranslateUi(this);
+	_deviceDlg->retranslate();
 }
 
 void MainWindow::readPort()
@@ -114,7 +115,7 @@ void MainWindow::loadDeviceList()
 	do
 	{
 		qDebug("%d", q.value("id").toInt());
-		ui->cmbDevices->addItem(q.value("name").toString(), q.value("id").toInt());
+		ui->cmbDevices->addItem(q.value("name").toString(), q.value("id").toUInt());
 	}
 	while (q.next());
 
@@ -123,8 +124,9 @@ void MainWindow::loadDeviceList()
 void MainWindow::openClicked()
 {
 	_postpone.clear();
+	bool st = _port->isOpen();
 	
-	if (_port->isOpen())
+	if (st)
 	{
 		_port->close();
 		ui->cmdOpen->setText(tr("Open"));
@@ -138,6 +140,7 @@ void MainWindow::openClicked()
 		_port->setParity(_currentDevice.getParity());
 		_port->setStopBits(_currentDevice.getStopBits());
 		ui->chkEcho->setChecked(_currentDevice.getEcho());
+		ui->chkCaps->setChecked(_currentDevice.getCaps());
 		
 		if (_port->open(QIODevice::ReadWrite))
 		{
@@ -150,7 +153,8 @@ void MainWindow::openClicked()
 		}
 		ui->cmdOpen->setText(tr("Close"));
 	}
-	changeEnableState();
+	if (_port->isOpen() != st)
+		changeEnableState();
 }
 
 void MainWindow::addDevice()
@@ -170,18 +174,13 @@ void MainWindow::addDevice()
 
 void MainWindow::editDevice()
 {
-	Device d;
-	if (!d.load(ui->cmbDevices->currentData().toInt()))
-	{
-		printLog(tr("Database error! Device not found!"));
-	}
-	_deviceDlg->load(d);
+	_deviceDlg->load(_currentDevice);
 	if (_deviceDlg->exec() == QDialog::Accepted) 
 	{
-		_deviceDlg->dialogResult(d);
-		if (!d.update(d.getId()))
+		_deviceDlg->dialogResult(_currentDevice);
+		if (!_currentDevice.update(_currentDevice.getId()))
 		{
-			printLog(tr("Database error! Update error!"));
+			printLog(tr("Database error! Update error! ").append(_db.lastError().text()));
 		}
 		loadDeviceList();
 	}
@@ -190,18 +189,19 @@ void MainWindow::editDevice()
 void MainWindow::removeDevice()
 {
 	Device d;
-	if (!d.remove(ui->cmbDevices->currentData().toInt()))
+	if (!d.remove(ui->cmbDevices->currentData().toUInt()))
 	{
-		printLog(tr("Database error! Device not found!"));
+		printLog(tr("Database error! Device not found! ").append(_db.lastError().text()));
 	}
 	loadDeviceList();
 }
 
 void MainWindow::currentDeviceChanged(int index)
 {
-	Q_UNUSED(index)
+	if (index < 0)
+		return;
 	
-	if (!_currentDevice.load(ui->cmbDevices->currentData().toInt()))
+	if (!_currentDevice.load(ui->cmbDevices->currentData().toUInt()))
 	{
 		printLog(tr("Database error! Device not found!"));
 	}

@@ -53,47 +53,52 @@
         <translation>Отложенная отправка:</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.ui" line="137"/>
+        <location filename="../DeviceDlg.ui" line="107"/>
+        <source>Caps</source>
+        <translation>Верхний регистр</translation>
+    </message>
+    <message>
+        <location filename="../DeviceDlg.ui" line="147"/>
         <source>OK</source>
         <translation>ОК</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.ui" line="144"/>
+        <location filename="../DeviceDlg.ui" line="154"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.cpp" line="87"/>
+        <location filename="../DeviceDlg.cpp" line="89"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.cpp" line="87"/>
+        <location filename="../DeviceDlg.cpp" line="89"/>
         <source>You must enter device name!</source>
         <translation>Вы должны ввести наименование устройства!</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.cpp" line="99"/>
+        <location filename="../DeviceDlg.cpp" line="101"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.cpp" line="100"/>
+        <location filename="../DeviceDlg.cpp" line="102"/>
         <source>Even</source>
         <translation>Четный</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.cpp" line="101"/>
+        <location filename="../DeviceDlg.cpp" line="103"/>
         <source>Odd</source>
         <translation>Нечет</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.cpp" line="102"/>
+        <location filename="../DeviceDlg.cpp" line="104"/>
         <source>Space</source>
         <translation>Низкий</translation>
     </message>
     <message>
-        <location filename="../DeviceDlg.cpp" line="103"/>
+        <location filename="../DeviceDlg.cpp" line="105"/>
         <source>Mark</source>
         <translation>Высокий</translation>
     </message>
@@ -117,7 +122,7 @@
     </message>
     <message>
         <location filename="../MainWindow.ui" line="68"/>
-        <location filename="../MainWindow.cpp" line="122"/>
+        <location filename="../MainWindow.cpp" line="130"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
@@ -181,43 +186,43 @@
         <translation>Файл не найден</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="123"/>
+        <location filename="../MainWindow.cpp" line="131"/>
         <source>
 Port closed!
-</source>
-        <translation>\nПорт закрыт!</translation>
-    </message>
-    <message>
-        <location filename="../MainWindow.cpp" line="136"/>
-        <source>[Port openned!]
 </source>
         <translation>Порт закрыт!</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="140"/>
+        <location filename="../MainWindow.cpp" line="144"/>
+        <source>[Port openned!]
+</source>
+        <translation>Порт открыт!</translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="148"/>
         <source>[Port unavailable!]
 </source>
         <translation>Порт недоступен!</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="143"/>
+        <location filename="../MainWindow.cpp" line="151"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="157"/>
+        <location filename="../MainWindow.cpp" line="165"/>
         <source>Database error! Insertion error!</source>
         <translation>Ошибка БД! Вставка не удалась!</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="168"/>
-        <location filename="../MainWindow.cpp" line="187"/>
-        <location filename="../MainWindow.cpp" line="198"/>
+        <location filename="../MainWindow.cpp" line="176"/>
+        <location filename="../MainWindow.cpp" line="195"/>
+        <location filename="../MainWindow.cpp" line="206"/>
         <source>Database error! Device not found!</source>
         <translation>Ошибка БД! Устройство не найдено!</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="176"/>
+        <location filename="../MainWindow.cpp" line="184"/>
         <source>Database error! Update error!</source>
         <translation>Ошибка БД! Изменения не записаны!</translation>
     </message>

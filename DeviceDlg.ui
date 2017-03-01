@@ -101,6 +101,16 @@
        <item row="7" column="1">
         <widget class="QCheckBox" name="postponedWritingCheckBox"/>
        </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="capsLabel">
+         <property name="text">
+          <string>Caps</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QCheckBox" name="capsCheckBox"/>
+       </item>
       </layout>
      </item>
      <item>
